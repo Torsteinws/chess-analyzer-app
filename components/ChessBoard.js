@@ -14,12 +14,33 @@ import Icon from "react-native-vector-icons/FontAwesome5"
 
 const ChessBoard = (props)  => {
 
-    let [piecePlacement, setPiecePlacement] = useState(defaultPiecePlacement)
+    let [piecePlacement, setPiecePlacement] = useState([...defaultPiecePlacement])
+    let [selectedSquares, setSelectedSquares] = useState(() => [...defaultSelectedSquares()])
+
+    // finds if there are any selected items. Currently not in use. Will be used in the future
+    const checkIfAnySelected = () => {
+        let anySelected = selectedSquares.some( (row, i) => {
+            anySelectedInRow = !row.every( value => value == false)
+            if(anySelectedInRow) {
+                return true
+            }
+        })
+    }
+
+    const squarePressed = (rowIndex, colIndex) => {
+
+        let newValues = [...defaultSelectedSquares()]
+        newValues[rowIndex][colIndex] = true
+        setSelectedSquares(newValues)
+    }
 
     return (
         <View style={props.style}>
             <View style={[ gridSizes.container, gridBorders.container]}>
-                <Board squares={piecePlacement}/>
+                <Board 
+                    squares={piecePlacement} 
+                    selectedSquares={selectedSquares}
+                    squarePressed={(row, col) => squarePressed(row, col)}/>
             </View>
         </View>
     );
@@ -28,7 +49,7 @@ const ChessBoard = (props)  => {
 
 
 
-const Board = ({squares}) => {
+const Board = ({squares, selectedSquares, squarePressed}) => {
 
     return squares.map( (row, rowIndex) => (
         <View style={[gridSizes.row, gridBorders.row]}>
@@ -37,20 +58,16 @@ const Board = ({squares}) => {
                     rowIndex={rowIndex}
                     colIndex={colIndex}
                     piece={value}
+                    isSelected={selectedSquares[rowIndex][colIndex]}
+                    squarePressed={(row, col) => squarePressed(row, col)}
                  />
             ))}
         </View>
     ))
 }
 
-const Square = ({rowIndex, colIndex, piece}) => {
-
-    const [isSelected, setIsActive] = useState(false)
+const Square = ({rowIndex, colIndex, piece, squarePressed, isSelected}) => {
     
-    const onPress = () => {
-        setIsActive(!isSelected)
-    }
-
     const isEven = (colIndex + rowIndex)% 2 == 0; 
     let backgroundStyle
     if(isSelected){
@@ -67,7 +84,7 @@ const Square = ({rowIndex, colIndex, piece}) => {
                 gridBorders.square,
                 backgroundStyle
             ]}
-            onPress={() => onPress()}
+            onPress={() => squarePressed(rowIndex, colIndex)}
         >
             <View>
                 {piece}
@@ -76,7 +93,6 @@ const Square = ({rowIndex, colIndex, piece}) => {
 
     )
 }
-
 
 const backgroundColor = StyleSheet.create({
     even: {
@@ -112,7 +128,6 @@ const gridSizes = StyleSheet.create({
         alignItems: "center"
     }
 })
-
 
 const borderSize = StyleSheet.hairlineWidth
 const borderColor = "rgb(50,50,50)"
@@ -259,4 +274,16 @@ const defaultPiecePlacement = [
     ]     
 ]
 
+const defaultSelectedSquares = () => { 
+    return [
+        [ false, false, false, false, false, false, false, false],
+        [ false, false, false, false, false, false, false, false],
+        [ false, false, false, false, false, false, false, false],
+        [ false, false, false, false, false, false, false, false],
+        [ false, false, false, false, false, false, false, false],
+        [ false, false, false, false, false, false, false, false],
+        [ false, false, false, false, false, false, false, false],
+        [ false, false, false, false, false, false, false, false]
+    ]
+}
 export default ChessBoard;
