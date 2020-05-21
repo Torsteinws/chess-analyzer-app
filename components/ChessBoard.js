@@ -6,59 +6,15 @@ import {
 	View,
 	Text,
     StatusBar,
-    Dimensions
+    Dimensions,
+    TouchableHighlight,
+    TouchableOpacity
 } from 'react-native';
 import Icon from "react-native-vector-icons/FontAwesome5"
 
 const ChessBoard = (props)  => {
 
-    let [piecePlacement, setPiecePlacement] = useState
-    ([
-        [ 
-            <Rook   color="black"/>,
-            <Knight color="black"/>,
-            <Bishop color="black"/>,
-            <Queen  color="black"/>,
-            <King   color="black"/>,
-            <Bishop color="black"/>,
-            <Knight color="black"/>,
-            <Rook   color="black"/>
-        ], 
-        [   
-            <Pawn color="black"/>, 
-            <Pawn color="black"/>, 
-            <Pawn color="black"/>, 
-            <Pawn color="black"/>, 
-            <Pawn color="black"/>,
-            <Pawn color="black"/>, 
-            <Pawn color="black"/>, 
-            <Pawn color="black"/>
-        ], 
-        [ null, null, null, null, null, null, null, null], 
-        [ null, null, null, null, null, null, null, null], 
-        [ null, null, null, null, null, null, null, null], 
-        [ null, null, null, null, null, null, null, null], 
-        [   
-            <Pawn color="white"/>, 
-            <Pawn color="white"/>, 
-            <Pawn color="white"/>, 
-            <Pawn color="white"/>, 
-            <Pawn color="white"/>,
-            <Pawn color="white"/>, 
-            <Pawn color="white"/>, 
-            <Pawn color="white"/>
-        ], 
-        [ 
-            <Rook   color="white"/>,
-            <Knight color="white"/>,
-            <Bishop color="white"/>,
-            <Queen  color="white"/>,
-            <King   color="white"/>,
-            <Bishop color="white"/>,
-            <Knight color="white"/>,
-            <Rook   color="white"/>
-        ]     
-    ])
+    let [piecePlacement, setPiecePlacement] = useState(defaultPiecePlacement)
 
     return (
         <View style={props.style}>
@@ -70,30 +26,71 @@ const ChessBoard = (props)  => {
 };
 
 
+
+
 const Board = ({squares}) => {
-    
+
     return squares.map( (row, rowIndex) => (
         <View style={[gridSizes.row, gridBorders.row]}>
-             {row.map( (col, colIndex) => (
-                <View 
-                    style={[
-                        gridSizes.square, 
-                        gridBorders.square,
-                        (colIndex + rowIndex)% 2 == 0 ? bacgroundColor.even : bacgroundColor.odd
-                    ]}>
-                    {col}
-                </View>
+             {row.map( (value, colIndex) => (
+                 <Square 
+                    rowIndex={rowIndex}
+                    colIndex={colIndex}
+                    piece={value}
+                 />
             ))}
         </View>
     ))
 }
 
-const bacgroundColor = StyleSheet.create({
+const Square = ({rowIndex, colIndex, piece}) => {
+
+    const [isSelected, setIsActive] = useState(false)
+    
+    const onPress = () => {
+        setIsActive(!isSelected)
+    }
+
+    const isEven = (colIndex + rowIndex)% 2 == 0; 
+    let backgroundStyle
+    if(isSelected){
+        backgroundStyle = isEven ? backgroundColor.selectedEven : backgroundColor.selectedOdd
+    }
+    else {
+        backgroundStyle = isEven ? backgroundColor.even : backgroundColor.odd
+    }
+    
+    return (     
+        <TouchableOpacity
+            style={[
+                gridSizes.square, 
+                gridBorders.square,
+                backgroundStyle
+            ]}
+            onPress={() => onPress()}
+        >
+            <View>
+                {piece}
+            </View>
+        </TouchableOpacity>
+
+    )
+}
+
+
+const backgroundColor = StyleSheet.create({
+    even: {
+        backgroundColor: "rgb(240, 217, 181)"
+    },
     odd: {
         backgroundColor: "rgb(181,136,99)"
     },
-    even: {
-        backgroundColor: "rgb(240, 217, 181)"
+    // The selected backround color is 40 units lower than the default backround color
+    selectedEven: {
+        backgroundColor: "rgb(200, 177, 141)"
+    },
+    selectedOdd: {
+        backgroundColor: "rgb(141,96,59)"
     }
 })
 
@@ -170,7 +167,7 @@ const pieceStyle = StyleSheet.create({
 const Pawn = ({color}) => {
     return (
         <>
-            <Icon name="chess-pawn" color={color} size={40}/>
+            <Icon name="chess-pawn" color={color} size={37}/>
         </>
     )
 }
@@ -178,7 +175,7 @@ const Pawn = ({color}) => {
 const Rook = ({color}) => {
     return (
         <>
-            <Icon name="chess-rook" color={color} size={40}/>
+            <Icon name="chess-rook" color={color} size={35}/>
         </>
     )
 }
@@ -186,7 +183,7 @@ const Rook = ({color}) => {
 const Knight = ({color}) => {
     return (
         <>
-            <Icon name="chess-knight" color={color} size={40}/>
+            <Icon name="chess-knight" color={color} size={35}/>
         </>
     )
 }
@@ -194,7 +191,7 @@ const Knight = ({color}) => {
 const Bishop = ({color}) => {
     return (
         <>
-            <Icon name="chess-bishop" color={color} size={40}/>
+            <Icon name="chess-bishop" color={color} size={35}/>
         </>
     )
 }
@@ -202,7 +199,7 @@ const Bishop = ({color}) => {
 const Queen = ({color}) => {
     return (
         <>
-            <Icon name="chess-queen" color={color} size={40}/>
+            <Icon name="chess-queen" color={color} size={35}/>
         </>
     )
 }
@@ -210,9 +207,56 @@ const Queen = ({color}) => {
 const King = ({color}) => {
     return (
         <>
-            <Icon name="chess-king" color={color} size={40}/>
+            <Icon name="chess-king" color={color} size={35}/>
         </>
     )
 }
+
+const defaultPiecePlacement = [
+    [ 
+        <Rook   color="black"/>,
+        <Knight color="black"/>,
+        <Bishop color="black"/>,
+        <Queen  color="black"/>,
+        <King   color="black"/>,
+        <Bishop color="black"/>,
+        <Knight color="black"/>,
+        <Rook   color="black"/>
+    ], 
+    [   
+        <Pawn color="black"/>, 
+        <Pawn color="black"/>, 
+        <Pawn color="black"/>, 
+        <Pawn color="black"/>, 
+        <Pawn color="black"/>,
+        <Pawn color="black"/>, 
+        <Pawn color="black"/>, 
+        <Pawn color="black"/>
+    ], 
+    [ null, null, null, null, null, null, null, null], 
+    [ null, null, null, null, null, null, null, null], 
+    [ null, null, null, null, null, null, null, null], 
+    [ null, null, null, null, null, null, null, null], 
+    [   
+        <Pawn color="white"/>, 
+        <Pawn color="white"/>, 
+        <Pawn color="white"/>, 
+        <Pawn color="white"/>, 
+        <Pawn color="white"/>,
+        <Pawn color="white"/>, 
+        <Pawn color="white"/>, 
+        <Pawn color="white"/>
+    ], 
+    [ 
+        <Rook   color="white"/>,
+        <Knight color="white"/>,
+        <Bishop color="white"/>,
+        <Queen  color="white"/>,
+        <King   color="white"/>,
+        <Bishop color="white"/>,
+        <Knight color="white"/>,
+        <Rook   color="white"/>
+    ]     
+]
 
 export default ChessBoard;
