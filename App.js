@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
 	SafeAreaView,
 	StyleSheet,
@@ -15,18 +15,34 @@ import {
 	Text,
 	StatusBar,
 } from 'react-native';
+import ChessBoard from "./components/ChessBoard"
 
 
 const App = ()  => {
-return (
-	<>
-		<View>
-			<Text>
-				Hello World
-			</Text>
+
+	return (
+		<View style={style.appContainer}>
+			<Text>Hello World</Text>
+			<Text>Hello World</Text>
+			<Text>Hello World</Text>
+			<Text>Hello World</Text>
+			<Text>Hello World</Text>
+			<Text>Hello World</Text>
+			<ChessBoard style={style.chessBoard}/>
 		</View>
-	</>
-);
+		
+	);
 };
+
+const style = StyleSheet.create({
+	appContainer: {
+		flex: 1,
+		flexGrow: 1,
+		flexDirection: "column",
+	},
+	chessBoard: {
+		margin: 10
+	}
+})
 
 export default App;
