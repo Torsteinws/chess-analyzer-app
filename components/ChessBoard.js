@@ -109,6 +109,10 @@ const gridSizes = StyleSheet.create({
     square: { 
         width: `${100/8}%`,
         aspectRatio: 1,
+        
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center"
     }
 })
 
