@@ -38,15 +38,29 @@ const Board = ({squares}) => {
     return squares.map( (row, rowIndex) => (
         <View style={[gridSizes.row, gridBorders.row]}>
              {row.map( (col, colIndex) => (
-                <View style={[gridSizes.square, gridBorders.square]}>
+                <View 
+                    style={[
+                        gridSizes.square, 
+                        gridBorders.square,
+                        (colIndex + rowIndex)% 2 == 0 ? bacgroundColor.even : bacgroundColor.odd
+                    ]}>
                     <Text>
-                        {`(${rowIndex},${colIndex})`}
+                        {/* {`(${rowIndex},${colIndex})`} */}
                     </Text>
                 </View>
             ))}
         </View>
     ))
 }
+
+const bacgroundColor = StyleSheet.create({
+    odd: {
+        backgroundColor: "rgb(181,136,99)"
+    },
+    even: {
+        backgroundColor: "rgb(240, 217, 181)"
+    }
+})
 
 const gridSizes = StyleSheet.create({
     container: {
@@ -64,8 +78,8 @@ const gridSizes = StyleSheet.create({
 })
 
 
-const borderSize = 1
-const borderColor = "black"
+const borderSize = StyleSheet.hairlineWidth
+const borderColor = "rgb(50,50,50)"
 const gridBorders = StyleSheet.create({
     container: {
         borderLeftWidth: borderSize,
