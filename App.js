@@ -15,6 +15,7 @@ import {
 	Text,
 	StatusBar,
 } from 'react-native';
+import Header from "./components/Header"
 import ChessBoard from "./components/ChessBoard"
 
 
@@ -22,12 +23,7 @@ const App = ()  => {
 
 	return (
 		<View style={style.appContainer}>
-			<Text>Hello World</Text>
-			<Text>Hello World</Text>
-			<Text>Hello World</Text>
-			<Text>Hello World</Text>
-			<Text>Hello World</Text>
-			<Text>Hello World</Text>
+			<Header style={style.header} text="Chess analyzer"/>
 			<ChessBoard style={style.chessBoard}/>
 		</View>
 		
@@ -35,6 +31,9 @@ const App = ()  => {
 };
 
 const style = StyleSheet.create({
+	header: {
+		height: 100
+	},
 	appContainer: {
 		flex: 1,
 		flexGrow: 1,
