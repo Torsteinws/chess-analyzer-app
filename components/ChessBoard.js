@@ -8,19 +8,56 @@ import {
     StatusBar,
     Dimensions
 } from 'react-native';
+import Icon from "react-native-vector-icons/FontAwesome5"
 
 const ChessBoard = (props)  => {
 
     let [piecePlacement, setPiecePlacement] = useState
     ([
+        [ 
+            <Rook   color="black"/>,
+            <Knight color="black"/>,
+            <Bishop color="black"/>,
+            <Queen  color="black"/>,
+            <King   color="black"/>,
+            <Bishop color="black"/>,
+            <Knight color="black"/>,
+            <Rook   color="black"/>
+        ], 
+        [   
+            <Pawn color="black"/>, 
+            <Pawn color="black"/>, 
+            <Pawn color="black"/>, 
+            <Pawn color="black"/>, 
+            <Pawn color="black"/>,
+            <Pawn color="black"/>, 
+            <Pawn color="black"/>, 
+            <Pawn color="black"/>
+        ], 
         [ null, null, null, null, null, null, null, null], 
         [ null, null, null, null, null, null, null, null], 
         [ null, null, null, null, null, null, null, null], 
         [ null, null, null, null, null, null, null, null], 
-        [ null, null, null, null, null, null, null, null], 
-        [ null, null, null, null, null, null, null, null], 
-        [ null, null, null, null, null, null, null, null], 
-        [ null, null, null, null, null, null, null, null]     
+        [   
+            <Pawn color="white"/>, 
+            <Pawn color="white"/>, 
+            <Pawn color="white"/>, 
+            <Pawn color="white"/>, 
+            <Pawn color="white"/>,
+            <Pawn color="white"/>, 
+            <Pawn color="white"/>, 
+            <Pawn color="white"/>
+        ], 
+        [ 
+            <Rook   color="white"/>,
+            <Knight color="white"/>,
+            <Bishop color="white"/>,
+            <Queen  color="white"/>,
+            <King   color="white"/>,
+            <Bishop color="white"/>,
+            <Knight color="white"/>,
+            <Rook   color="white"/>
+        ]     
     ])
 
     return (
@@ -44,9 +81,7 @@ const Board = ({squares}) => {
                         gridBorders.square,
                         (colIndex + rowIndex)% 2 == 0 ? bacgroundColor.even : bacgroundColor.odd
                     ]}>
-                    <Text>
-                        {/* {`(${rowIndex},${colIndex})`} */}
-                    </Text>
+                    {col}
                 </View>
             ))}
         </View>
@@ -122,6 +157,58 @@ const CalculateSquareSize = () => {
     return runTimeStyle
 }
 
+const pieceStyle = StyleSheet.create({
+    rotate: {
+        transform: [{rotateX: "180deg"}] 
+    }
+})
 
+const Pawn = ({color}) => {
+    return (
+        <>
+            <Icon name="chess-pawn" color={color} size={40}/>
+        </>
+    )
+}
+
+const Rook = ({color}) => {
+    return (
+        <>
+            <Icon name="chess-rook" color={color} size={40}/>
+        </>
+    )
+}
+
+const Knight = ({color}) => {
+    return (
+        <>
+            <Icon name="chess-knight" color={color} size={40}/>
+        </>
+    )
+}
+
+const Bishop = ({color}) => {
+    return (
+        <>
+            <Icon name="chess-bishop" color={color} size={40}/>
+        </>
+    )
+}
+
+const Queen = ({color}) => {
+    return (
+        <>
+            <Icon name="chess-queen" color={color} size={40}/>
+        </>
+    )
+}
+
+const King = ({color}) => {
+    return (
+        <>
+            <Icon name="chess-king" color={color} size={40}/>
+        </>
+    )
+}
 
 export default ChessBoard;
