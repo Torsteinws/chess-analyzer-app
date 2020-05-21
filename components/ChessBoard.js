@@ -101,12 +101,12 @@ const backgroundColor = StyleSheet.create({
     odd: {
         backgroundColor: "rgb(181,136,99)"
     },
-    // The selected backround color is 40 units lower than the default backround color
+    // The selected backround color is 60 units lower than the default backround color
     selectedEven: {
-        backgroundColor: "rgb(200, 177, 141)"
+        backgroundColor: "rgb(180, 157, 121)"
     },
     selectedOdd: {
-        backgroundColor: "rgb(141,96,59)"
+        backgroundColor: "rgb(121,76,39)"
     }
 })
 
