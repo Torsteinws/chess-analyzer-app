@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import {
 	SafeAreaView,
 	StyleSheet,
@@ -14,9 +14,9 @@ import Icon from "react-native-vector-icons/FontAwesome5"
 
 const ChessBoard = (props)  => {
 
-    let [piecePlacement, setPiecePlacement] = useState([...defaultPiecePlacement])
+    let [piecePlacement, setPiecePlacement] = useState([...defaultPiecePlacement()])
     let [selectedSquares, setSelectedSquares] = useState(() => [...defaultSelectedSquares()])
-
+    let [selected, setSelected] = useState(null)
     // finds if there are any selected items. Currently not in use. Will be used in the future
     const checkIfAnySelected = () => {
         let anySelected = selectedSquares.some( (row, i) => {
@@ -27,11 +27,45 @@ const ChessBoard = (props)  => {
         })
     }
 
-    const squarePressed = (rowIndex, colIndex) => {
+    const moveFromTo = (x1, y1, x2, y2 ) => {
+        let newVal = [...piecePlacement];
+        newVal[x2][y2] = newVal[x1][y1]
+        newVal[x1][y1] = null
+        
+        setPiecePlacement(newVal)
+    }
 
-        let newValues = [...defaultSelectedSquares()]
-        newValues[rowIndex][colIndex] = true
-        setSelectedSquares(newValues)
+    const isInMoveSet = (piece, row1, col1, row2, col2) => {
+        moveSet = piece.getMoveSet(row1, col1)
+        console.log(moveSet)
+        if(moveSet.length > 0){
+            return moveSet.includes([row2, col2])
+        }
+        else{
+            return false
+        }
+    }
+    
+    
+    const squarePressed = (rowIndex, colIndex) => {
+        
+
+        if(selected){
+
+            move(rowIndex, colIndex)
+        }
+        else {
+
+            let piece = piecePlacement[rowIndex][colIndex]
+            if(piece == null) return
+
+            let newValues = [...defaultSelectedSquares()]
+            newValues[rowIndex][colIndex] = true
+            setSelectedSquares(newValues)
+            setSelected({
+                row: rowIndex, 
+                col: colIndex})
+        }
     }
 
     return (
@@ -57,7 +91,7 @@ const Board = ({squares, selectedSquares, squarePressed}) => {
                  <Square 
                     rowIndex={rowIndex}
                     colIndex={colIndex}
-                    piece={value}
+                    piece={value == null ? null : value.icon }
                     isSelected={selectedSquares[rowIndex][colIndex]}
                     squarePressed={(row, col) => squarePressed(row, col)}
                  />
@@ -179,13 +213,13 @@ const pieceStyle = StyleSheet.create({
     }
 })
 
-const Pawn = ({color}) => {
-    return (
-        <>
-            <Icon name="chess-pawn" color={color} size={37}/>
-        </>
-    )
-}
+// const Pawn = ({color}) => {
+//     return (
+//         <>
+//             <Icon name="chess-pawn" color={color} size={37}/>
+//         </>
+//     )
+// }
 
 const Rook = ({color}) => {
     return (
@@ -227,52 +261,57 @@ const King = ({color}) => {
     )
 }
 
-const defaultPiecePlacement = [
-    [ 
-        <Rook   color="black"/>,
-        <Knight color="black"/>,
-        <Bishop color="black"/>,
-        <Queen  color="black"/>,
-        <King   color="black"/>,
-        <Bishop color="black"/>,
-        <Knight color="black"/>,
-        <Rook   color="black"/>
-    ], 
-    [   
-        <Pawn color="black"/>, 
-        <Pawn color="black"/>, 
-        <Pawn color="black"/>, 
-        <Pawn color="black"/>, 
-        <Pawn color="black"/>,
-        <Pawn color="black"/>, 
-        <Pawn color="black"/>, 
-        <Pawn color="black"/>
-    ], 
-    [ null, null, null, null, null, null, null, null], 
-    [ null, null, null, null, null, null, null, null], 
-    [ null, null, null, null, null, null, null, null], 
-    [ null, null, null, null, null, null, null, null], 
-    [   
-        <Pawn color="white"/>, 
-        <Pawn color="white"/>, 
-        <Pawn color="white"/>, 
-        <Pawn color="white"/>, 
-        <Pawn color="white"/>,
-        <Pawn color="white"/>, 
-        <Pawn color="white"/>, 
-        <Pawn color="white"/>
-    ], 
-    [ 
-        <Rook   color="white"/>,
-        <Knight color="white"/>,
-        <Bishop color="white"/>,
-        <Queen  color="white"/>,
-        <King   color="white"/>,
-        <Bishop color="white"/>,
-        <Knight color="white"/>,
-        <Rook   color="white"/>
-    ]     
-]
+const defaultPiecePlacement =  () => { 
+    return [
+        // [ 
+        //     <Rook   color="black"/>,
+        //     <Knight color="black"/>,
+        //     <Bishop color="black"/>,
+        //     <Queen  color="black"/>,
+        //     <King   color="black"/>,
+        //     <Bishop color="black"/>,
+        //     <Knight color="black"/>,
+        //     <Rook   color="black"/>
+        // ], 
+        // [   
+        //     <Pawn color="black"/>, 
+        //     <Pawn color="black"/>, 
+        //     <Pawn color="black"/>, 
+        //     <Pawn color="black"/>, 
+        //     <Pawn color="black"/>,
+        //     <Pawn color="black"/>, 
+        //     <Pawn color="black"/>, 
+        //     <Pawn color="black"/>
+        // ], 
+        [ new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black")],
+        [ null, null, null, null, null, null, null, null], 
+        [ null, null, null, null, null, null, null, null], 
+        [ null, null, null, null, null, null, null, null], 
+        [ new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white")], 
+        // [   
+        //     <Pawn color="white"/>, 
+        //     <Pawn color="white"/>, 
+        //     <Pawn color="white"/>, 
+        //     <Pawn color="white"/>, 
+        //     <Pawn color="white"/>,
+        //     <Pawn color="white"/>, 
+        //     <Pawn color="white"/>, 
+        //     <Pawn color="white"/>
+        // ], 
+        // [ 
+        //     <Rook   color="white"/>,
+        //     <Knight color="white"/>,
+        //     <Bishop color="white"/>,
+        //     <Queen  color="white"/>,
+        //     <King   color="white"/>,
+        //     <Bishop color="white"/>,
+        //     <Knight color="white"/>,
+        //     <Rook   color="white"/>
+        // ]     
+    ]
+}
+
+
 
 const defaultSelectedSquares = () => { 
     return [
@@ -286,4 +325,48 @@ const defaultSelectedSquares = () => {
         [ false, false, false, false, false, false, false, false]
     ]
 }
+
+class Pawn {
+
+    constructor(color){
+        this.color = color
+        this.icon = <Icon name="chess-pawn" color={color} size={37}/>
+        this.hasMoved = false
+
+        if(color === "white"){
+            this.isBottom = true
+        }
+        else if(color === "black"){
+            this.isBottom = false;
+        }
+    } 
+
+    getMoveSet(row, col){
+        let moveSet = []
+        if(this.isBottom){
+            moveSet.push([row + 1, col])
+            if(!this.hasMoved) {
+                moveSet.push([row + 2, col])
+            }
+        }
+        else{
+            moveSet.push([row - 1, col])
+            if(!this.hasMoved){
+                moveSet.push([row -2, col])
+            }
+        }
+        return moveSet
+    }
+
+    canMove(x1, y1, x2, y2){
+        // let isBaseMove = row2-row1 == 1 && col1 == 
+        if(!this.hasMoved && row2 - row1 == 2 && col1 == col2){
+            return true
+        }
+        else if(this.hasMoved){
+
+        }
+    }
+}
+
 export default ChessBoard;
