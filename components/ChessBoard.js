@@ -307,7 +307,7 @@ class Pawn {
         // Todo: 
         //  1. En passant
         //  2. Quening
-
+        
         return [...baseMoves, ...attackMoves]
     }
 
@@ -349,7 +349,7 @@ class Pawn {
     hitTest(square, board){
 
         // if out of bounds
-        if(square.row < 0 || square.col < 0 || square.row > 7 || square.row > 7){
+        if(square.row < 0 || square.col < 0 || square.row >= 7 || square.row >= 7){
             return squareStatus.offBoard
         }
 
