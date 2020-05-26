@@ -17,14 +17,7 @@ const ChessBoard = (props)  => {
     let [piecePlacement, setPiecePlacement] = useState([...defaultPiecePlacement()])
     let [selected, setSelected] = useState({row: null, col: null})
     let [moveSet, setMoveSet] = useState([{row: null, col: null}])
-
-    const moveFromTo = (x1, y1, x2, y2 ) => {
-        let newVal = [...piecePlacement];
-        newVal[x2][y2] = newVal[x1][y1]
-        newVal[x1][y1] = null
-        
-        setPiecePlacement(newVal)
-    }
+    let [isWhiteTurn, setIsWhiteTurn] = useState(true);
     
     const displayMoves = (piece, row, col) => {
         let moveSet = piece.getMoveSet(row, col, piecePlacement)
@@ -51,7 +44,8 @@ const ChessBoard = (props)  => {
 
         setPiecePlacement(newPlacement)
         setSelected({row: null, col:null})
-        setMoveSet([{row: null, col: null}])        
+        setMoveSet([{row: null, col: null}])    
+        setIsWhiteTurn(!isWhiteTurn)    
     }
 
     return (
@@ -63,6 +57,7 @@ const ChessBoard = (props)  => {
                     onPieceMove={(row, col) => onPieceMove(row, col)}
                     selectedSquare={selected}
                     possibleMoves={moveSet}
+                    isWhiteTurn={isWhiteTurn}
                 />
             </View>
         </View>
@@ -72,12 +67,12 @@ const ChessBoard = (props)  => {
 
 
 
-const Board = ({squares, onPieceSelect, onPieceMove, selectedSquare, possibleMoves}) => {
+const Board = ({squares, onPieceSelect, onPieceMove, selectedSquare, possibleMoves, isWhiteTurn}) => {
     return squares.map( (row, rowIndex) => (
         <View style={[gridSizes.row, gridBorders.row]}>
              {row.map( (item, colIndex) => {
                  
-                let piece = item == null ? null : item.icon
+                
 
                  let isSelected = false
                  if(rowIndex === selectedSquare.row && colIndex === selectedSquare.col){
@@ -94,8 +89,9 @@ const Board = ({squares, onPieceSelect, onPieceMove, selectedSquare, possibleMov
                     <Square 
                         rowIndex={rowIndex}
                         colIndex={colIndex}
-                        piece={piece}
+                        piece={item}
                         isSelected={isSelected}
+                        isWhiteTurn={isWhiteTurn}
                         isTarget={isTarget}
                         onPieceSelect={(row, col) => onPieceSelect(row, col)}
                         onPieceMove={(row, col) => onPieceMove(row, col)}
@@ -106,17 +102,21 @@ const Board = ({squares, onPieceSelect, onPieceMove, selectedSquare, possibleMov
     ))
 }
 
-const Square = ({rowIndex, colIndex, piece, onPieceSelect, isSelected, isTarget, onPieceMove}) => {
+const Square = ({rowIndex, colIndex, piece, onPieceSelect, isSelected, isTarget, onPieceMove, isWhiteTurn}) => {
     
     const onPress = () => {
         if(isTarget){
             onPieceMove(rowIndex, colIndex)
         }
         else if(piece){
-            onPieceSelect(rowIndex, colIndex)
+            let canBeSelected = ( isWhiteTurn && piece.color === "white" ) || ( !isWhiteTurn && piece.color === "black" )
+            if(canBeSelected){
+                onPieceSelect(rowIndex, colIndex)
+            }
         }
     }
 
+    let pieceIcon = piece == null ? null : piece.icon
 
     const isEven = (colIndex + rowIndex)% 2 == 0; 
     let backgroundStyle
@@ -143,7 +143,7 @@ const Square = ({rowIndex, colIndex, piece, onPieceSelect, isSelected, isTarget,
             <View style={square.container}>
                 {target}
                 <View style={square.pieceContainer}>
-                    {piece}
+                    {pieceIcon}
                 </View>
             </View>
         </TouchableOpacity>
