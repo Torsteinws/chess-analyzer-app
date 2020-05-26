@@ -15,17 +15,8 @@ import Icon from "react-native-vector-icons/FontAwesome5"
 const ChessBoard = (props)  => {
 
     let [piecePlacement, setPiecePlacement] = useState([...defaultPiecePlacement()])
-    let [selectedSquares, setSelectedSquares] = useState(() => [...defaultSelectedSquares()])
-    let [selected, setSelected] = useState(null)
-    // finds if there are any selected items. Currently not in use. Will be used in the future
-    const checkIfAnySelected = () => {
-        let anySelected = selectedSquares.some( (row, i) => {
-            anySelectedInRow = !row.every( value => value == false)
-            if(anySelectedInRow) {
-                return true
-            }
-        })
-    }
+    let [selected, setSelected] = useState({row: null, col: null})
+    let [moveSet, setMoveSet] = useState([{row: null, col: null}])
 
     const moveFromTo = (x1, y1, x2, y2 ) => {
         let newVal = [...piecePlacement];
@@ -34,38 +25,33 @@ const ChessBoard = (props)  => {
         
         setPiecePlacement(newVal)
     }
-
-    const isInMoveSet = (piece, row1, col1, row2, col2) => {
-        moveSet = piece.getMoveSet(row1, col1)
-        console.log(moveSet)
-        if(moveSet.length > 0){
-            return moveSet.includes([row2, col2])
+    
+    const displayMoves = (piece, row, col) => {
+        let moveSet = piece.getMoveSet(row, col, piecePlacement)
+        if(moveSet){
+            setMoveSet([...moveSet])
         }
         else{
-            return false
+            setMoveSet([{row: null, col: null}])
         }
     }
-    
-    
-    const squarePressed = (rowIndex, colIndex) => {
-        
 
-        if(selected){
+    const onPieceSelect = (row, col) => {
+        let piece = piecePlacement[row][col];
+        displayMoves(piece, row, col)
+        setSelected({row: row, col: col})
+    }
 
-            move(rowIndex, colIndex)
-        }
-        else {
+    const onPieceMove = (targetRow, targetCol) => {
+        let newPlacement = [...piecePlacement]
+        let piece = newPlacement[selected.row][selected.col]
+        newPlacement[targetRow][targetCol] = piece
+        newPlacement[selected.row][selected.col] = null
+        piece.hasMoved = true
 
-            let piece = piecePlacement[rowIndex][colIndex]
-            if(piece == null) return
-
-            let newValues = [...defaultSelectedSquares()]
-            newValues[rowIndex][colIndex] = true
-            setSelectedSquares(newValues)
-            setSelected({
-                row: rowIndex, 
-                col: colIndex})
-        }
+        setPiecePlacement(newPlacement)
+        setSelected({row: null, col:null})
+        setMoveSet([{row: null, col: null}])        
     }
 
     return (
@@ -73,8 +59,11 @@ const ChessBoard = (props)  => {
             <View style={[ gridSizes.container, gridBorders.container]}>
                 <Board 
                     squares={piecePlacement} 
-                    selectedSquares={selectedSquares}
-                    squarePressed={(row, col) => squarePressed(row, col)}/>
+                    onPieceSelect={(row, col) => onPieceSelect(row, col)}
+                    onPieceMove={(row, col) => onPieceMove(row, col)}
+                    selectedSquare={selected}
+                    possibleMoves={moveSet}
+                />
             </View>
         </View>
     );
@@ -83,25 +72,52 @@ const ChessBoard = (props)  => {
 
 
 
-const Board = ({squares, selectedSquares, squarePressed}) => {
-
+const Board = ({squares, onPieceSelect, onPieceMove, selectedSquare, possibleMoves}) => {
     return squares.map( (row, rowIndex) => (
         <View style={[gridSizes.row, gridBorders.row]}>
-             {row.map( (value, colIndex) => (
-                 <Square 
-                    rowIndex={rowIndex}
-                    colIndex={colIndex}
-                    piece={value == null ? null : value.icon }
-                    isSelected={selectedSquares[rowIndex][colIndex]}
-                    squarePressed={(row, col) => squarePressed(row, col)}
-                 />
-            ))}
+             {row.map( (item, colIndex) => {
+                 
+                let piece = item == null ? null : item.icon
+
+                 let isSelected = false
+                 if(rowIndex === selectedSquare.row && colIndex === selectedSquare.col){
+                     isSelected = true
+                 }
+
+                 let isTarget = false
+
+                 if(possibleMoves.some( move => move.row === rowIndex && move.col === colIndex)){
+                     isTarget = true
+                 }
+
+                 return (
+                    <Square 
+                        rowIndex={rowIndex}
+                        colIndex={colIndex}
+                        piece={piece}
+                        isSelected={isSelected}
+                        isTarget={isTarget}
+                        onPieceSelect={(row, col) => onPieceSelect(row, col)}
+                        onPieceMove={(row, col) => onPieceMove(row, col)}
+                    />
+                )}
+            )}
         </View>
     ))
 }
 
-const Square = ({rowIndex, colIndex, piece, squarePressed, isSelected}) => {
+const Square = ({rowIndex, colIndex, piece, onPieceSelect, isSelected, isTarget, onPieceMove}) => {
     
+    const onPress = () => {
+        if(isTarget){
+            onPieceMove(rowIndex, colIndex)
+        }
+        else if(piece){
+            onPieceSelect(rowIndex, colIndex)
+        }
+    }
+
+
     const isEven = (colIndex + rowIndex)% 2 == 0; 
     let backgroundStyle
     if(isSelected){
@@ -110,7 +126,11 @@ const Square = ({rowIndex, colIndex, piece, squarePressed, isSelected}) => {
     else {
         backgroundStyle = isEven ? backgroundColor.even : backgroundColor.odd
     }
-    
+
+    let target;
+    if(isTarget){
+        target = <View style={square.target}></View>
+    }
     return (     
         <TouchableOpacity
             style={[
@@ -118,15 +138,43 @@ const Square = ({rowIndex, colIndex, piece, squarePressed, isSelected}) => {
                 gridBorders.square,
                 backgroundStyle
             ]}
-            onPress={() => squarePressed(rowIndex, colIndex)}
+            onPress={() => onPress()}
         >
-            <View>
-                {piece}
+            <View style={square.container}>
+                {target}
+                <View style={square.pieceContainer}>
+                    {piece}
+                </View>
             </View>
         </TouchableOpacity>
 
     )
 }
+
+const square = StyleSheet.create({
+    container: {
+        flex: 1,
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        width: "100%",
+        height: "100%"
+    },
+    pieceContainer: {
+
+    },
+
+    target: {
+        backgroundColor: "rgb(80,80,80)",
+        opacity: 0.3,
+        width: "60%",
+        height: "60%",
+        borderRadius: 1000,
+        borderColor: "red",
+        position: "absolute",
+    }
+})
+
 
 const backgroundColor = StyleSheet.create({
     even: {
@@ -181,45 +229,7 @@ const gridBorders = StyleSheet.create({
     }
 })
 
-// This is no longer in use. 
-// The function might be useful in the future, so I'll leave it be for now
-const CalculateSquareSize = () => {
-    const screenWidth = Math.round(Dimensions.get("window").width)
-    const screenHeight = Math.round(Dimensions.get("window").height) 
-    const squareWidthMax = Math.round(screenWidth / 8)
-    const squareHeightMax = Math.round(screenHeight /8)
 
-    const size = squareWidthMax < squareHeightMax ? squareWidthMax : squareHeightMax
-    const runTimeStyle = StyleSheet.create({
-        boardContainer: {
-            // width: size*8,
-            // height: size*8,
-        },
-        row: {
-            // height: size,
-        },
-        square:{
-            // maxWidth: size,
-            // maxHeight: size,
-        }
-    })
-
-    return runTimeStyle
-}
-
-const pieceStyle = StyleSheet.create({
-    rotate: {
-        transform: [{rotateX: "180deg"}] 
-    }
-})
-
-// const Pawn = ({color}) => {
-//     return (
-//         <>
-//             <Icon name="chess-pawn" color={color} size={37}/>
-//         </>
-//     )
-// }
 
 const Rook = ({color}) => {
     return (
@@ -263,66 +273,13 @@ const King = ({color}) => {
 
 const defaultPiecePlacement =  () => { 
     return [
-        // [ 
-        //     <Rook   color="black"/>,
-        //     <Knight color="black"/>,
-        //     <Bishop color="black"/>,
-        //     <Queen  color="black"/>,
-        //     <King   color="black"/>,
-        //     <Bishop color="black"/>,
-        //     <Knight color="black"/>,
-        //     <Rook   color="black"/>
-        // ], 
-        // [   
-        //     <Pawn color="black"/>, 
-        //     <Pawn color="black"/>, 
-        //     <Pawn color="black"/>, 
-        //     <Pawn color="black"/>, 
-        //     <Pawn color="black"/>,
-        //     <Pawn color="black"/>, 
-        //     <Pawn color="black"/>, 
-        //     <Pawn color="black"/>
-        // ], 
+        [ null, null, null, null, null, null, null, null], 
         [ new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black")],
         [ null, null, null, null, null, null, null, null], 
         [ null, null, null, null, null, null, null, null], 
         [ null, null, null, null, null, null, null, null], 
-        [ new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white")], 
-        // [   
-        //     <Pawn color="white"/>, 
-        //     <Pawn color="white"/>, 
-        //     <Pawn color="white"/>, 
-        //     <Pawn color="white"/>, 
-        //     <Pawn color="white"/>,
-        //     <Pawn color="white"/>, 
-        //     <Pawn color="white"/>, 
-        //     <Pawn color="white"/>
-        // ], 
-        // [ 
-        //     <Rook   color="white"/>,
-        //     <Knight color="white"/>,
-        //     <Bishop color="white"/>,
-        //     <Queen  color="white"/>,
-        //     <King   color="white"/>,
-        //     <Bishop color="white"/>,
-        //     <Knight color="white"/>,
-        //     <Rook   color="white"/>
-        // ]     
-    ]
-}
-
-
-
-const defaultSelectedSquares = () => { 
-    return [
-        [ false, false, false, false, false, false, false, false],
-        [ false, false, false, false, false, false, false, false],
-        [ false, false, false, false, false, false, false, false],
-        [ false, false, false, false, false, false, false, false],
-        [ false, false, false, false, false, false, false, false],
-        [ false, false, false, false, false, false, false, false],
-        [ false, false, false, false, false, false, false, false],
-        [ false, false, false, false, false, false, false, false]
+        [ new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white")],    
+        [ null, null, null, null, null, null, null, null]
     ]
 }
 
@@ -332,6 +289,7 @@ class Pawn {
         this.color = color
         this.icon = <Icon name="chess-pawn" color={color} size={37}/>
         this.hasMoved = false
+        this.isSelected = false
 
         if(color === "white"){
             this.isBottom = true
@@ -341,32 +299,80 @@ class Pawn {
         }
     } 
 
-    getMoveSet(row, col){
-        let moveSet = []
-        if(this.isBottom){
-            moveSet.push([row + 1, col])
-            if(!this.hasMoved) {
-                moveSet.push([row + 2, col])
+    getMoveSet(row, col, board){
+        
+        let baseMoves = this.getBaseMoves(row, col, board)
+        let attackMoves = this.getAttackMoves(row, col, board)
+
+        // Todo: 
+        //  1. En passant
+        //  2. Quening
+
+        return [...baseMoves, ...attackMoves]
+    }
+
+    getBaseMoves(row, col, board){
+        let direction = this.isBottom ? -1 : 1
+        let square1 = {row: row + 1*direction, col: col}
+        if (this.hitTest(square1, board) == squareStatus.empty){
+            let moves = [square1]
+            if(!this.hasMoved){
+                let square2 = {row: row + 2*direction, col: col}
+                if(this.hitTest(square2, board) == squareStatus.empty){
+                    moves = [...moves, square2]
+                }
+            }
+            return moves
+        }
+        else{
+            return [{row: null, col: null}] 
+        }
+    } 
+
+    getAttackMoves(row, col, board){
+        let rowDirection = this.isBottom ? -1 : 1
+        let moves = []
+        for(let colDirection = -1; colDirection < 2; colDirection += 2){
+            let square = {row: row + 1*rowDirection, col: col + 1*colDirection}
+            if(this.hitTest(square, board) == squareStatus.foe){
+                moves = [...moves, square]
+            }
+        }
+        if(moves.length > 0){
+            return moves
+        }
+        else{
+            return [{row: null, col: null}]
+        }
+    }
+
+    hitTest(square, board){
+
+        // if out of bounds
+        if(square.row < 0 || square.col < 0 || square.row > 7 || square.row > 7){
+            return squareStatus.offBoard
+        }
+
+        let piece = board[square.row][square.col]
+        if(piece){
+            if(piece.isBottom == this.isBottom){
+                return squareStatus.friend
+            }
+            else {
+                return squareStatus.foe
             }
         }
         else{
-            moveSet.push([row - 1, col])
-            if(!this.hasMoved){
-                moveSet.push([row -2, col])
-            }
-        }
-        return moveSet
-    }
-
-    canMove(x1, y1, x2, y2){
-        // let isBaseMove = row2-row1 == 1 && col1 == 
-        if(!this.hasMoved && row2 - row1 == 2 && col1 == col2){
-            return true
-        }
-        else if(this.hasMoved){
-
+            return squareStatus.empty
         }
     }
+}
+
+const squareStatus = {
+    friend: "friend",
+    foe: "foe",
+    empty: "empty",
+    offBoard: "offBoard"
 }
 
 export default ChessBoard;
