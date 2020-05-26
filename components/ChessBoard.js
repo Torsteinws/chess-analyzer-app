@@ -231,13 +231,13 @@ const gridBorders = StyleSheet.create({
 
 
 
-const Rook = ({color}) => {
-    return (
-        <>
-            <Icon name="chess-rook" color={color} size={35}/>
-        </>
-    )
-}
+// const Rook = ({color}) => {
+//     return (
+//         <>
+//             <Icon name="chess-rook" color={color} size={35}/>
+//         </>
+//     )
+// }
 
 const Knight = ({color}) => {
     return (
@@ -273,13 +273,14 @@ const King = ({color}) => {
 
 const defaultPiecePlacement =  () => { 
     return [
-        [ null, null, null, null, null, null, null, null], 
+        [ new Rook("black"), null, null, null, null, null, null, new Rook("black")], 
         [ new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black")],
         [ null, null, null, null, null, null, null, null], 
+        [ null, null, null, null, null, null, null, null],
         [ null, null, null, null, null, null, null, null], 
         [ null, null, null, null, null, null, null, null], 
         [ new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white")],    
-        [ null, null, null, null, null, null, null, null]
+        [ new Rook("white"), null, null, null, null, null, null, new Rook("white")]
     ]
 }
 
@@ -289,7 +290,6 @@ class Pawn {
         this.color = color
         this.icon = <Icon name="chess-pawn" color={color} size={37}/>
         this.hasMoved = false
-        this.isSelected = false
 
         if(color === "white"){
             this.isBottom = true
@@ -349,7 +349,7 @@ class Pawn {
     hitTest(square, board){
 
         // if out of bounds
-        if(square.row < 0 || square.col < 0 || square.row >= 7 || square.row >= 7){
+        if(square.row < 0 || square.col < 0 || square.row > 7 || square.row > 7){
             return squareStatus.offBoard
         }
 
@@ -366,6 +366,145 @@ class Pawn {
             return squareStatus.empty
         }
     }
+}
+
+class Rook {
+
+    constructor(color){
+        this.color = color
+        this.icon = <Icon name="chess-rook" color={color} size={35}/>
+        this.hasMoved = false
+
+        if(color === "white"){
+            this.isBottom = true
+        }
+        else if(color === "black"){
+            this.isBottom = false;
+        }
+    }
+
+    getMoveSet(row, col, board){
+        
+        let posColMoves = this.getPosColMoves(row, col, board)
+        let negColMoves = this.getNegColMoves(row, col, board)
+        let posRowMoves = this.getPosRowMoves(row, col, board)
+        let negRowMoves = this.getNegRowMoves(row, col, board)
+
+        let moves = [...posColMoves, ...negColMoves, ...posRowMoves, ...negRowMoves]
+        if(moves.length <= 0){
+            moves = [{row: null, col: null}]
+        }
+        return moves
+    }
+
+    getPosColMoves(row, col, board){
+        
+        let i = 1
+        let moves = []
+        while(col + i < 8){
+            let square = {row: row, col: col + i}
+            let status = this.hitTest(square, board)
+            if(status === squareStatus.empty){
+                moves = [...moves, square]
+            }
+            else if(status === squareStatus.foe){
+                moves = [...moves, square]
+                break;
+            }
+            else{
+                break;
+            }
+            i++
+        }
+        return moves
+    }
+
+    getNegColMoves(row, col, board){
+        let i = 1
+        let moves = []
+        while(col - i >= 0){
+            let square = {row: row, col: col - i}
+            let status = this.hitTest(square, board)
+            if(status === squareStatus.empty){
+                moves = [...moves, square]
+            }
+            else if(status === squareStatus.foe){
+                moves = [...moves, square]
+                break;
+            }
+            else{
+                break;
+            }
+            i++
+        }
+        return moves
+    }
+    
+    getPosRowMoves(row, col, board){
+        
+        let i = 1
+        let moves = []
+        while(row + i < 8){
+            let square = {row: row + i, col: col}
+            let status = this.hitTest(square, board)
+            if(status === squareStatus.empty){
+                moves = [...moves, square]
+            }
+            else if(status === squareStatus.foe){
+                moves = [...moves, square]
+                break;
+            }
+            else{
+                break;
+            }
+            i++
+        }
+        return moves
+    }
+
+    
+    getNegRowMoves(row, col, board){
+        let i = 1
+        let moves = []
+        while(row - i >= 0){
+            let square = {row: row - i, col: col}
+            let status = this.hitTest(square, board)
+            if(status === squareStatus.empty){
+                moves = [...moves, square]
+            }
+            else if(status === squareStatus.foe){
+                moves = [...moves, square]
+                break;
+            }
+            else{
+                break;
+            }
+            i++
+        }
+        return moves
+    }    
+
+    hitTest(square, board){
+
+        // if out of bounds
+        if(square.row < 0 || square.col < 0 || square.row > 7 || square.row > 7){
+            return squareStatus.offBoard
+        }
+
+        let piece = board[square.row][square.col]
+        if(piece){
+            if(piece.isBottom == this.isBottom){
+                return squareStatus.friend
+            }
+            else {
+                return squareStatus.foe
+            }
+        }
+        else{
+            return squareStatus.empty
+        }
+    }
+
 }
 
 const squareStatus = {
