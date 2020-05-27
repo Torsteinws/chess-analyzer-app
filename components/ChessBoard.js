@@ -239,13 +239,13 @@ const gridBorders = StyleSheet.create({
 //     )
 // }
 
-const Knight = ({color}) => {
-    return (
-        <>
-            <Icon name="chess-knight" color={color} size={35}/>
-        </>
-    )
-}
+// const Knight = ({color}) => {
+//     return (
+//         <>
+//             <Icon name="chess-knight" color={color} size={35}/>
+//         </>
+//     )
+// }
 
 const Bishop = ({color}) => {
     return (
@@ -273,14 +273,14 @@ const King = ({color}) => {
 
 const defaultPiecePlacement =  () => { 
     return [
-        [ new Rook("black"), null, null, null, null, null, null, new Rook("black")], 
+        [ new Rook("black"), new Knight("black"), null, null, null, null, new Knight("black"), new Rook("black")], 
         [ new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black")],
         [ null, null, null, null, null, null, null, null], 
         [ null, null, null, null, null, null, null, null],
         [ null, null, null, null, null, null, null, null], 
         [ null, null, null, null, null, null, null, null], 
         [ new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white")],    
-        [ new Rook("white"), null, null, null, null, null, null, new Rook("white")]
+        [ new Rook("white"), new Knight("white"), null, null, null, null, new Knight("white"), new Rook("white")]
     ]
 }
 
@@ -504,7 +504,73 @@ class Rook {
             return squareStatus.empty
         }
     }
+}
 
+class Knight {
+    constructor(color){
+        this.color = color
+        this.icon = <Icon name="chess-knight" color={color} size={35}/>
+        this.hasMoved = false
+
+        if(color === "white"){
+            this.isBottom = true
+        }
+        else if(color === "black"){
+            this.isBottom = false;
+        }
+    }
+
+    getMoveSet(row, col, board){
+        console.log("test")
+        let baseMoves = this.getBaseMoves(row, col, board);
+        let moves = [...baseMoves]
+        if(moves.length <= 0){
+            moves = [{row: null, col: null}]
+        }
+        return moves
+    }
+
+    getBaseMoves(row, col, board){
+        let baseMoves = [
+            { row: row + 2, col: col + 1 },
+            { row: row + 2, col: col - 1 },
+            { row: row - 2, col: col + 1 },
+            { row: row - 2, col: col - 1 },
+            { row: row + 1, col: col + 2 },
+            { row: row - 1, col: col + 2 },
+            { row: row + 1, col: col - 2 },
+            { row: row - 1, col: col - 2 }        
+        ]
+        let moves = baseMoves.filter( square => {
+            let status = this.hitTest(square, board)
+            if(status === squareStatus.empty || status === squareStatus.foe) {
+                return true
+            }
+        })
+        console.log(moves)
+        return moves;
+    }
+
+    hitTest(square, board){
+
+        // if out of bounds
+        if(square.row < 0 || square.col < 0 || square.row > 7 || square.row > 7){
+            return squareStatus.offBoard
+        }
+
+        let piece = board[square.row][square.col]
+        if(piece){
+            if(piece.isBottom == this.isBottom){
+                return squareStatus.friend
+            }
+            else {
+                return squareStatus.foe
+            }
+        }
+        else{
+            return squareStatus.empty
+        }
+    }
 }
 
 const squareStatus = {
