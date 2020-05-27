@@ -247,13 +247,13 @@ const gridBorders = StyleSheet.create({
 //     )
 // }
 
-const Bishop = ({color}) => {
-    return (
-        <>
-            <Icon name="chess-bishop" color={color} size={35}/>
-        </>
-    )
-}
+// const Bishop = ({color}) => {
+//     return (
+//         <>
+//             <Icon name="chess-bishop" color={color} size={35}/>
+//         </>
+//     )
+// }
 
 const Queen = ({color}) => {
     return (
@@ -273,14 +273,14 @@ const King = ({color}) => {
 
 const defaultPiecePlacement =  () => { 
     return [
-        [ new Rook("black"), new Knight("black"), null, null, null, null, new Knight("black"), new Rook("black")], 
-        [ new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black")],
+        [ new Rook("black"), new Knight("black"), new Bishop("black"), null, null, new Bishop("black"), new Knight("black"), new Rook("black")], 
+        [ new Pawn("black"), null, new Pawn("black"), null, new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black")],
         [ null, null, null, null, null, null, null, null], 
         [ null, null, null, null, null, null, null, null],
         [ null, null, null, null, null, null, null, null], 
         [ null, null, null, null, null, null, null, null], 
-        [ new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white")],    
-        [ new Rook("white"), new Knight("white"), null, null, null, null, new Knight("white"), new Rook("white")]
+        [ new Pawn("white"), null, new Pawn("white"), null, new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white")],    
+        [ new Rook("white"), new Knight("white"), new Bishop("white"), null, null, new Bishop("white"), new Knight("white"), new Rook("white")]
     ]
 }
 
@@ -549,6 +549,81 @@ class Knight {
         })
         console.log(moves)
         return moves;
+    }
+
+    hitTest(square, board){
+
+        // if out of bounds
+        if(square.row < 0 || square.col < 0 || square.row > 7 || square.row > 7){
+            return squareStatus.offBoard
+        }
+
+        let piece = board[square.row][square.col]
+        if(piece){
+            if(piece.isBottom == this.isBottom){
+                return squareStatus.friend
+            }
+            else {
+                return squareStatus.foe
+            }
+        }
+        else{
+            return squareStatus.empty
+        }
+    }
+}
+
+
+class Bishop {
+    constructor(color){
+        this.color = color
+        this.icon = <Icon name="chess-bishop" color={color} size={35}/>
+        this.hasMoved = false
+
+        if(color === "white"){
+            this.isBottom = true
+        }
+        else if(color === "black"){
+            this.isBottom = false;
+        }
+    }
+
+    getMoveSet(row, col, board){
+        let posRowPosCol = this.getBaseMoves(row, col, board,  1,  1);
+        let posRowNegCol = this.getBaseMoves(row, col, board,  1, -1);
+        let negRowPosCol = this.getBaseMoves(row, col, board, -1,  1);
+        let negRowNegCol = this.getBaseMoves(row, col, board, -1, -1);
+        let moves = [...posRowPosCol, ...posRowNegCol, ...negRowPosCol, ...negRowNegCol]
+        if(moves.length <= 0){
+            moves = [{row: null, col: null}]
+        }
+        return moves
+    }
+
+    getBaseMoves(row, col, board, rowDir, colDir){
+        
+        let moves = []
+
+        let i = 1*rowDir
+        let j = 1*colDir
+        while(row + i < 8 && col + j < 8 && row + i >= 0 && col + j >= 0){
+            let square = {row: row + i, col: col + j}
+            let status = this.hitTest(square, board)
+            if(status === squareStatus.empty){
+                moves = [...moves, square]
+            }
+            else if(status === squareStatus.foe){
+                moves = [...moves, square]
+                break;
+            }
+            else {
+                break
+            }
+    
+            i += 1*rowDir
+            j += 1*colDir
+        }
+        return moves
     }
 
     hitTest(square, board){
