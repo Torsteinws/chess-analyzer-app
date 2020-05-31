@@ -269,24 +269,24 @@ const gridBorders = StyleSheet.create({
 //     )
 // }
 
-const King = ({color}) => {
-    return (
-        <>
-            <Icon name="chess-king" color={color} size={35}/>
-        </>
-    )
-}
+// const King = ({color}) => {
+//     return (
+//         <>
+//             <Icon name="chess-king" color={color} size={35}/>
+//         </>
+//     )
+// }
 
 const defaultPiecePlacement =  () => { 
     return [
-        [ new Rook("black"), new Knight("black"), new Bishop("black"), new Queen("black"), null, new Bishop("black"), new Knight("black"), new Rook("black")], 
+        [ new Rook("black"), new Knight("black"), new Bishop("black"), new Queen("black"), new King("black"), new Bishop("black"), new Knight("black"), new Rook("black")], 
         [ new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black")],
         [ null, null, null, null, null, null, null, null], 
-        [ null, null, null, null, null, null, null, null],
-        [ null, null, null, null, null, null, null, null], 
+        [ null, null, new King("black"), null, null, null, null, null],
+        [ null, null, null, null, null, new King("white"), null, null], 
         [ null, null, null, null, null, null, null, null], 
         [ new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white")],    
-        [ new Rook("white"), new Knight("white"), new Bishop("white"), new Queen("white"), null, new Bishop("white"), new Knight("white"), new Rook("white")]
+        [ new Rook("white"), new Knight("white"), new Bishop("white"), new Queen("white"), new King("white"), new Bishop("white"), new Knight("white"), new Rook("white")]
     ]
 }
 
@@ -600,6 +600,46 @@ class Queen extends ChessPiece{
         let moves = [...rookMoveSet, ...bishopMoveSet]
         if(moves.length <= 0){
             moves = [{row: null, col: null}]
+        }
+        return moves
+    }
+}
+
+class King extends ChessPiece{
+    constructor(color){
+        super(color)
+        this.icon = <Icon name="chess-king" color={color} size={35}/>
+    }
+
+    getMoveSet(row, col, board){
+
+        if(row == null || col == null) return [{row: null, col: null}]
+
+        let baseMoves = this.getBaseMoves(row, col, board)
+        // Todo:
+        //  1. Castle moves
+        //  2. Do not allow the king to walk into check
+
+        let moves = [...baseMoves]
+        if(moves.length <= 0){
+            moves = [{row: null, col: null}]
+        }
+        return moves
+    }
+
+    getBaseMoves(row, col, board){
+        let moves = []
+        for(let i = -1; i < 2; i++){
+            for(let j = -1; j < 2; j++){
+                let evalRow = row + i;
+                let evalCol = col + j
+                if( evalRow < 0 || evalCol < 0 || evalRow > 8 || evalCol > 8) continue // if out of bounds
+                let square = {row: evalRow, col: evalCol}
+                let status = this.hitTest(square, board)
+                if(status === squareStatus.foe || status === squareStatus.empty){
+                    moves = [...moves, square]
+                }
+            }
         }
         return moves
     }
