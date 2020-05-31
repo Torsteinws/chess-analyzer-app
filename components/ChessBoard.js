@@ -30,7 +30,13 @@ const ChessBoard = (props)  => {
     }
 
     const onPieceSelect = (row, col) => {
+        
         let piece = piecePlacement[row][col];
+        // If the selected piece has already been selected, we want to unselect it (toggle functionality)
+        if(selected.row === row && selected.col === col){
+            row = null
+            col = null
+        }
         displayMoves(piece, row, col)
         setSelected({row: row, col: col})
     }
@@ -324,6 +330,8 @@ class Pawn extends ChessPiece {
 
     getMoveSet(row, col, board){
         
+        if(row == null || col == null) return [{row: null, col: null}]
+
         let baseMoves = this.getBaseMoves(row, col, board)
         let attackMoves = this.getAttackMoves(row, col, board)
 
@@ -379,6 +387,8 @@ class Rook extends ChessPiece{
 
     getMoveSet(row, col, board){
         
+        if(row == null || col == null) return [{row: null, col: null}]
+
         let posColMoves = this.getPosColMoves(row, col, board)
         let negColMoves = this.getNegColMoves(row, col, board)
         let posRowMoves = this.getPosRowMoves(row, col, board)
@@ -486,7 +496,9 @@ class Knight extends ChessPiece{
     }
 
     getMoveSet(row, col, board){
-        console.log("test")
+
+        if(row == null || col == null) return [{row: null, col: null}]
+
         let baseMoves = this.getBaseMoves(row, col, board);
         let moves = [...baseMoves]
         if(moves.length <= 0){
@@ -525,6 +537,9 @@ class Bishop extends ChessPiece{
     }
 
     getMoveSet(row, col, board){
+
+        if(row == null || col == null) return [{row: null, col: null}]
+
         let posRowPosCol = this.getBaseMoves(row, col, board,  1,  1);
         let posRowNegCol = this.getBaseMoves(row, col, board,  1, -1);
         let negRowPosCol = this.getBaseMoves(row, col, board, -1,  1);
@@ -537,7 +552,6 @@ class Bishop extends ChessPiece{
     }
 
     getBaseMoves(row, col, board, rowDir, colDir){
-        
         let moves = []
 
         let i = 1*rowDir
@@ -578,6 +592,9 @@ class Queen extends ChessPiece{
     }
 
     getMoveSet(row, col, board){
+
+        if(row == null || col == null) return [{row: null, col: null}]
+
         let rookMoveSet     = this.getRookMoveSet(row, col, board)
         let bishopMoveSet   = this.getBishopMoveSet(row, col, board)
         let moves = [...rookMoveSet, ...bishopMoveSet]
