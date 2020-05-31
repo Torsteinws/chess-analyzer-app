@@ -619,8 +619,7 @@ class King extends ChessPiece{
         let baseMoves = this.getBaseMoves(row, col, board)
         let castleMoves = this.getCastleMoves(row, col, board)
         // Todo:
-        //  1. Castle moves
-        //  2. Do not allow the king to walk into check
+        //  1. Do not allow the king to walk into or castle into check
 
         let moves = [...baseMoves, ...castleMoves]
         if(moves.length <= 0){
@@ -650,35 +649,35 @@ class King extends ChessPiece{
         let king = board[row][col]
         let moves = []
         if(!king.hasMoved){
-            let rookLeft = board[row][0]
-            if(rookLeft){
-                if(!rookLeft.hasMoved){
-                    let canCastle = true;
-                    for(let i = 1; i < col; i++){
-                        let square = {row: row, col: i}
-                        let status = this.hitTest(square, board)
-                        if(status === squareStatus.friend || status === squareStatus.foe){
-                            canCastle = false;
-                            break;
-                        } 
-                    }
-                    if(canCastle){
-                        moves = [...moves, {row: row, col: col - 2}]
+            let rooks = [board[row][0], board[row][7]]
+            rooks.forEach( (rook, index) => {
+                if(rook){
+                    if(!rook.hasMoved){
+                        // Itterate over all square between rook and king, and check if castling is allowed
+                        let canCastle = true
+                        let castleLeft = index === 0 ? true : false
+                        let colStart = castleLeft ? 1 : col + 1
+                        let colEnd = castleLeft ? col : 7 
+                        for(let i = colStart; i < colEnd; i++ ){
+                            let square = {row: row, col: i}
+                            let status = this.hitTest(square, board)
+                            if(status === squareStatus.friend || status === squareStatus.foe){
+                                canCastle = false;
+                                break;
+                            }  
+                        }
+                        if(canCastle){
+                            let direction = castleLeft ? -1 : 1;
+                            moves = [...moves, {row: row, col: col + 2*direction}]
+                        }
                     }
                 }
-            }
-
-            let rookRight = board[row][7]
-            if(rookRight){
-                if(!rookRight.hasMoved){
-                    moves = [...moves, {row: row, col: col +2}]
-                }
-            }
+            })
         }
         return moves
     }
 
-    
+
 }
 
 const squareStatus = {
