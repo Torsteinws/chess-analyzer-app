@@ -282,11 +282,12 @@ const defaultPiecePlacement =  () => {
         [ new Rook("black"), new Knight("black"), new Bishop("black"), new Queen("black"), new King("black"), new Bishop("black"), new Knight("black"), new Rook("black")], 
         [ new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black")],
         [ null, null, null, null, null, null, null, null], 
-        [ null, null, new King("black"), null, null, null, null, null],
-        [ null, null, null, null, null, new King("white"), null, null], 
+        [ null, null, null, null, null, null, null, null],
+        [ null, null, null, null, null, null, null, null], 
         [ null, null, null, null, null, null, null, null], 
         [ new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white")],    
-        [ new Rook("white"), new Knight("white"), new Bishop("white"), new Queen("white"), new King("white"), new Bishop("white"), new Knight("white"), new Rook("white")]
+        // [ new Rook("white"), new Knight("white"), new Bishop("white"), new Queen("white"), new King("white"), new Bishop("white"), new Knight("white"), new Rook("white")]
+        [ new Rook("white"), null, null, null, new King("white"), null, null, new Rook("white")]
     ]
 }
 
@@ -616,11 +617,12 @@ class King extends ChessPiece{
         if(row == null || col == null) return [{row: null, col: null}]
 
         let baseMoves = this.getBaseMoves(row, col, board)
+        let castleMoves = this.getCastleMoves(row, col, board)
         // Todo:
         //  1. Castle moves
         //  2. Do not allow the king to walk into check
 
-        let moves = [...baseMoves]
+        let moves = [...baseMoves, ...castleMoves]
         if(moves.length <= 0){
             moves = [{row: null, col: null}]
         }
@@ -643,6 +645,40 @@ class King extends ChessPiece{
         }
         return moves
     }
+
+    getCastleMoves(row, col, board){
+        let king = board[row][col]
+        let moves = []
+        if(!king.hasMoved){
+            let rookLeft = board[row][0]
+            if(rookLeft){
+                if(!rookLeft.hasMoved){
+                    let canCastle = true;
+                    for(let i = 1; i < col; i++){
+                        let square = {row: row, col: i}
+                        let status = this.hitTest(square, board)
+                        if(status === squareStatus.friend || status === squareStatus.foe){
+                            canCastle = false;
+                            break;
+                        } 
+                    }
+                    if(canCastle){
+                        moves = [...moves, {row: row, col: col - 2}]
+                    }
+                }
+            }
+
+            let rookRight = board[row][7]
+            if(rookRight){
+                if(!rookRight.hasMoved){
+                    moves = [...moves, {row: row, col: col +2}]
+                }
+            }
+        }
+        return moves
+    }
+
+    
 }
 
 const squareStatus = {
