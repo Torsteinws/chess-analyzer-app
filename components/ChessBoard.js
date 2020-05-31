@@ -284,19 +284,42 @@ const defaultPiecePlacement =  () => {
     ]
 }
 
-class Pawn {
-
+class ChessPiece {
     constructor(color){
         this.color = color
-        this.icon = <Icon name="chess-pawn" color={color} size={37}/>
+        this.icon = null
         this.hasMoved = false
 
-        if(color === "white"){
-            this.isBottom = true
+        this.isBottom = color === "white" ? true : false
+    } 
+
+    hitTest(square, board){
+
+        // if out of bounds
+        if(square.row < 0 || square.col < 0 || square.row > 7 || square.row > 7){
+            return squareStatus.offBoard
         }
-        else if(color === "black"){
-            this.isBottom = false;
+
+        let piece = board[square.row][square.col]
+        if(piece){
+            if(piece.isBottom == this.isBottom){
+                return squareStatus.friend
+            }
+            else {
+                return squareStatus.foe
+            }
         }
+        else{
+            return squareStatus.empty
+        }
+    }
+}
+
+class Pawn extends ChessPiece {
+
+    constructor(color){
+        super(color)
+        this.icon = <Icon name="chess-pawn" color={color} size={37}/>
     } 
 
     getMoveSet(row, col, board){
@@ -345,42 +368,13 @@ class Pawn {
             return [{row: null, col: null}]
         }
     }
-
-    hitTest(square, board){
-
-        // if out of bounds
-        if(square.row < 0 || square.col < 0 || square.row > 7 || square.row > 7){
-            return squareStatus.offBoard
-        }
-
-        let piece = board[square.row][square.col]
-        if(piece){
-            if(piece.isBottom == this.isBottom){
-                return squareStatus.friend
-            }
-            else {
-                return squareStatus.foe
-            }
-        }
-        else{
-            return squareStatus.empty
-        }
-    }
 }
 
-class Rook {
+class Rook extends ChessPiece{
 
     constructor(color){
-        this.color = color
+        super(color)
         this.icon = <Icon name="chess-rook" color={color} size={35}/>
-        this.hasMoved = false
-
-        if(color === "white"){
-            this.isBottom = true
-        }
-        else if(color === "black"){
-            this.isBottom = false;
-        }
     }
 
     getMoveSet(row, col, board){
@@ -483,41 +477,12 @@ class Rook {
         }
         return moves
     }    
-
-    hitTest(square, board){
-
-        // if out of bounds
-        if(square.row < 0 || square.col < 0 || square.row > 7 || square.row > 7){
-            return squareStatus.offBoard
-        }
-
-        let piece = board[square.row][square.col]
-        if(piece){
-            if(piece.isBottom == this.isBottom){
-                return squareStatus.friend
-            }
-            else {
-                return squareStatus.foe
-            }
-        }
-        else{
-            return squareStatus.empty
-        }
-    }
 }
 
-class Knight {
+class Knight extends ChessPiece{
     constructor(color){
-        this.color = color
+        super(color)
         this.icon = <Icon name="chess-knight" color={color} size={35}/>
-        this.hasMoved = false
-
-        if(color === "white"){
-            this.isBottom = true
-        }
-        else if(color === "black"){
-            this.isBottom = false;
-        }
     }
 
     getMoveSet(row, col, board){
@@ -550,42 +515,13 @@ class Knight {
         console.log(moves)
         return moves;
     }
-
-    hitTest(square, board){
-
-        // if out of bounds
-        if(square.row < 0 || square.col < 0 || square.row > 7 || square.row > 7){
-            return squareStatus.offBoard
-        }
-
-        let piece = board[square.row][square.col]
-        if(piece){
-            if(piece.isBottom == this.isBottom){
-                return squareStatus.friend
-            }
-            else {
-                return squareStatus.foe
-            }
-        }
-        else{
-            return squareStatus.empty
-        }
-    }
 }
 
 
-class Bishop {
+class Bishop extends ChessPiece{
     constructor(color){
-        this.color = color
+        super(color)
         this.icon = <Icon name="chess-bishop" color={color} size={35}/>
-        this.hasMoved = false
-
-        if(color === "white"){
-            this.isBottom = true
-        }
-        else if(color === "black"){
-            this.isBottom = false;
-        }
     }
 
     getMoveSet(row, col, board){
@@ -624,27 +560,6 @@ class Bishop {
             j += 1*colDir
         }
         return moves
-    }
-
-    hitTest(square, board){
-
-        // if out of bounds
-        if(square.row < 0 || square.col < 0 || square.row > 7 || square.row > 7){
-            return squareStatus.offBoard
-        }
-
-        let piece = board[square.row][square.col]
-        if(piece){
-            if(piece.isBottom == this.isBottom){
-                return squareStatus.friend
-            }
-            else {
-                return squareStatus.foe
-            }
-        }
-        else{
-            return squareStatus.empty
-        }
     }
 }
 
