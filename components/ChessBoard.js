@@ -255,13 +255,13 @@ const gridBorders = StyleSheet.create({
 //     )
 // }
 
-const Queen = ({color}) => {
-    return (
-        <>
-            <Icon name="chess-queen" color={color} size={35}/>
-        </>
-    )
-}
+// const Queen = ({color}) => {
+//     return (
+//         <>
+//             <Icon name="chess-queen" color={color} size={35}/>
+//         </>
+//     )
+// }
 
 const King = ({color}) => {
     return (
@@ -273,14 +273,14 @@ const King = ({color}) => {
 
 const defaultPiecePlacement =  () => { 
     return [
-        [ new Rook("black"), new Knight("black"), new Bishop("black"), null, null, new Bishop("black"), new Knight("black"), new Rook("black")], 
-        [ new Pawn("black"), null, new Pawn("black"), null, new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black")],
+        [ new Rook("black"), new Knight("black"), new Bishop("black"), new Queen("black"), null, new Bishop("black"), new Knight("black"), new Rook("black")], 
+        [ new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black")],
         [ null, null, null, null, null, null, null, null], 
         [ null, null, null, null, null, null, null, null],
         [ null, null, null, null, null, null, null, null], 
         [ null, null, null, null, null, null, null, null], 
-        [ new Pawn("white"), null, new Pawn("white"), null, new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white")],    
-        [ new Rook("white"), new Knight("white"), new Bishop("white"), null, null, new Bishop("white"), new Knight("white"), new Rook("white")]
+        [ new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white")],    
+        [ new Rook("white"), new Knight("white"), new Bishop("white"), new Queen("white"), null, new Bishop("white"), new Knight("white"), new Rook("white")]
     ]
 }
 
@@ -558,6 +558,31 @@ class Bishop extends ChessPiece{
     
             i += 1*rowDir
             j += 1*colDir
+        }
+        return moves
+    }
+}
+
+class Queen extends ChessPiece{
+    constructor(color){
+        super(color)
+        this.icon = <Icon name="chess-queen" color={color} size={35}/>
+
+        // We can get the move set of a queen by combining the move set of a rook and a bishop
+        // Here we are getting a reference to the move set method in the rook and bishop class
+        let rook = new Rook(color);
+        let bishop = new Bishop(color);
+        this.getRookMoveSet     = (row, col, board) => rook.getMoveSet(row, col, board);
+        this.getBishopMoveSet   = (row, col, board) => bishop.getMoveSet(row, col, board)
+        
+    }
+
+    getMoveSet(row, col, board){
+        let rookMoveSet     = this.getRookMoveSet(row, col, board)
+        let bishopMoveSet   = this.getBishopMoveSet(row, col, board)
+        let moves = [...rookMoveSet, ...bishopMoveSet]
+        if(moves.length <= 0){
+            moves = [{row: null, col: null}]
         }
         return moves
     }
