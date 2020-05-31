@@ -236,47 +236,6 @@ const gridBorders = StyleSheet.create({
 })
 
 
-
-// const Rook = ({color}) => {
-//     return (
-//         <>
-//             <Icon name="chess-rook" color={color} size={35}/>
-//         </>
-//     )
-// }
-
-// const Knight = ({color}) => {
-//     return (
-//         <>
-//             <Icon name="chess-knight" color={color} size={35}/>
-//         </>
-//     )
-// }
-
-// const Bishop = ({color}) => {
-//     return (
-//         <>
-//             <Icon name="chess-bishop" color={color} size={35}/>
-//         </>
-//     )
-// }
-
-// const Queen = ({color}) => {
-//     return (
-//         <>
-//             <Icon name="chess-queen" color={color} size={35}/>
-//         </>
-//     )
-// }
-
-// const King = ({color}) => {
-//     return (
-//         <>
-//             <Icon name="chess-king" color={color} size={35}/>
-//         </>
-//     )
-// }
-
 const defaultPiecePlacement =  () => { 
     return [
         [ new Rook("black"), new Knight("black"), new Bishop("black"), new Queen("black"), new King("black"), new Bishop("black"), new Knight("black"), new Rook("black")], 
@@ -529,7 +488,6 @@ class Knight extends ChessPiece{
         return moves;
     }
 }
-
 
 class Bishop extends ChessPiece{
     constructor(color){
