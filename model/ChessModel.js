@@ -3,26 +3,55 @@ import Icon from "react-native-vector-icons/FontAwesome5"
 
 const defaultPiecePlacement =  () => { 
     return [
-        [ new Rook("black"), new Knight("black"), new Bishop("black"), new Queen("black"), new King("black"), new Bishop("black"), new Knight("black"), new Rook("black")], 
-        [ new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black")],
+        // [ new Rook("black"), new Knight("black"), new Bishop("black"), new Queen("black"), new King("black"), new Bishop("black"), new Knight("black"), new Rook("black")], 
+        // [ new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black"), new Pawn("black")],
+        [ null, null, null, null, null, null, null, null], 
+        [ null, null, null, null, null, null, null, null], 
+        [ null, null, null, null, null, null, null, null],
         [ null, null, null, null, null, null, null, null], 
         [ null, null, null, null, null, null, null, null],
         [ null, null, null, null, null, null, null, null], 
         [ null, null, null, null, null, null, null, null], 
-        [ new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white")],    
+        // [ new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white"), new Pawn("white")],    
         // [ new Rook("white"), new Knight("white"), new Bishop("white"), new Queen("white"), new King("white"), new Bishop("white"), new Knight("white"), new Rook("white")]
-        [ new Rook("white"), null, null, null, new King("white"), null, null, new Rook("white")]
+        // [ new Rook("white"), null, null, null, new King("white"), null, null, new Rook("white")]
+        [new Knight("white"), new Knight("black"), null, null, null, null, null, null]
     ]
 }
 
 class ChessModel{
 
     constructor(){
-        console.log("hello")
         this.board = defaultPiecePlacement();
+        this.updateAllMoveSets();
+
     }
 
+    updateAllMoveSets(){
+        this.board.forEach( (row, rowIndex) => {
+            row.forEach( (piece, colIndex) => {
+                if(piece){
+                    piece.row = rowIndex
+                    piece.col = colIndex
+                    piece.updateMoveSet(this.board);
+                }
+            })
+        })
+    }
 
+    move(piece, orgSquare, destSquare){
+
+        // move the piece on the board
+        this.board[destSquare.row][destSquare.col] = piece
+        this.board[orgSquare.row][orgSquare.col] = null
+    
+        // Let the piece know the current position so that it can recalculate its moveset
+        piece.row = destSquare.row
+        piece.col = destSquare.col
+        this.updateAllMoveSets();
+
+        piece.hasMoved = true;
+    }
 }
 
 class ChessPiece {
@@ -30,6 +59,10 @@ class ChessPiece {
         this.color = color
         this.icon = null
         this.hasMoved = false
+
+        this.row = null;
+        this.col = null;
+        this.moveSet = [{row: null, col: null}]
 
         this.isBottom = color === "white" ? true : false
     } 
@@ -40,7 +73,7 @@ class ChessPiece {
         if(square.row < 0 || square.col < 0 || square.row > 7 || square.row > 7){
             return squareStatus.offBoard
         }
-
+        console.log("square : ", square)
         let piece = board[square.row][square.col]
         if(piece){
             if(piece.isBottom == this.isBottom){
@@ -118,8 +151,6 @@ class Rook extends ChessPiece{
     constructor(color){
         super(color)
         this.icon = <Icon name="chess-rook" color={color} size={35}/>
-        this.attackVector = [{x: 1, y: 0}, {x: -1, y: 0}, {x: 0, y: 1}, {x: 0, y: -1}]
-        console.log(this.attackVector);
     }
 
     getMoveSet(row, col, board){
@@ -232,28 +263,26 @@ class Knight extends ChessPiece{
         this.icon = <Icon name="chess-knight" color={color} size={35}/>
     }
 
-    getMoveSet(row, col, board){
+    updateMoveSet(board){
 
-        if(row == null || col == null) return [{row: null, col: null}]
-
-        let baseMoves = this.getBaseMoves(row, col, board);
+        let baseMoves = this.getBaseMoves(board);
         let moves = [...baseMoves]
         if(moves.length <= 0){
             moves = [{row: null, col: null}]
         }
-        return moves
+        this.moveSet = moves;
     }
 
-    getBaseMoves(row, col, board){
+    getBaseMoves(board){
         let baseMoves = [
-            { row: row + 2, col: col + 1 },
-            { row: row + 2, col: col - 1 },
-            { row: row - 2, col: col + 1 },
-            { row: row - 2, col: col - 1 },
-            { row: row + 1, col: col + 2 },
-            { row: row - 1, col: col + 2 },
-            { row: row + 1, col: col - 2 },
-            { row: row - 1, col: col - 2 }        
+            { row: this.row + 2, col: this.col + 1 },
+            { row: this.row + 2, col: this.col - 1 },
+            { row: this.row - 2, col: this.col + 1 },
+            { row: this.row - 2, col: this.col - 1 },
+            { row: this.row + 1, col: this.col + 2 },
+            { row: this.row - 1, col: this.col + 2 },
+            { row: this.row + 1, col: this.col - 2 },
+            { row: this.row - 1, col: this.col - 2 }        
         ]
         let moves = baseMoves.filter( square => {
             let status = this.hitTest(square, board)
@@ -261,7 +290,6 @@ class Knight extends ChessPiece{
                 return true
             }
         })
-        console.log(moves)
         return moves;
     }
 }
@@ -272,14 +300,12 @@ class Bishop extends ChessPiece{
         this.icon = <Icon name="chess-bishop" color={color} size={35}/>
     }
 
-    getMoveSet(row, col, board){
+    getMoveSet(board){
 
-        if(row == null || col == null) return [{row: null, col: null}]
-
-        let posRowPosCol = this.getBaseMoves(row, col, board,  1,  1);
-        let posRowNegCol = this.getBaseMoves(row, col, board,  1, -1);
-        let negRowPosCol = this.getBaseMoves(row, col, board, -1,  1);
-        let negRowNegCol = this.getBaseMoves(row, col, board, -1, -1);
+        let posRowPosCol = this.getBaseMoves( board,  1,  1);
+        let posRowNegCol = this.getBaseMoves( board,  1, -1);
+        let negRowPosCol = this.getBaseMoves( board, -1,  1);
+        let negRowNegCol = this.getBaseMoves( board, -1, -1);
         let moves = [...posRowPosCol, ...posRowNegCol, ...negRowPosCol, ...negRowNegCol]
         if(moves.length <= 0){
             moves = [{row: null, col: null}]
@@ -287,13 +313,13 @@ class Bishop extends ChessPiece{
         return moves
     }
 
-    getBaseMoves(row, col, board, rowDir, colDir){
+    getBaseMoves(board, rowDir, colDir){
         let moves = []
 
         let i = 1*rowDir
         let j = 1*colDir
-        while(row + i < 8 && col + j < 8 && row + i >= 0 && col + j >= 0){
-            let square = {row: row + i, col: col + j}
+        while(this.row + i < 8 && this.col + j < 8 && this.row + i >= 0 && this.col + j >= 0){
+            let square = {row: this.row + i, col: this.col + j}
             let status = this.hitTest(square, board)
             if(status === squareStatus.empty){
                 moves = [...moves, square]
@@ -356,11 +382,16 @@ class King extends ChessPiece{
         // Todo:
         //  1. Do not allow the king to walk into or castle into check
 
-        let moves = [...baseMoves, ...castleMoves]
+        let maxMoves = [...baseMoves, ...castleMoves]
+        let moves = maxMoves.filter(square => this.squareIsSafe(square, board))
         if(moves.length <= 0){
             moves = [{row: null, col: null}]
         }
         return moves
+    }
+
+    squareIsSafe(square, board){
+        return true
     }
 
     getBaseMoves(row, col, board){

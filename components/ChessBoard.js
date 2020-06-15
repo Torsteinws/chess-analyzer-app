@@ -25,7 +25,7 @@ const ChessBoard = (props)  => {
     console.log("board: ", model.board)
     
     const displayMoves = (piece, row, col) => {
-        let moveSet = piece.getMoveSet(row, col, piecePlacement)
+        let moveSet = piece.moveSet
         if(moveSet){
             setMoveSet([...moveSet])
         }
@@ -47,13 +47,15 @@ const ChessBoard = (props)  => {
     }
 
     const onPieceMove = (targetRow, targetCol) => {
-        let newPlacement = [...piecePlacement]
-        let piece = newPlacement[selected.row][selected.col]
-        newPlacement[targetRow][targetCol] = piece
-        newPlacement[selected.row][selected.col] = null
-        piece.hasMoved = true
+        
+        let destSquare = {row: targetRow, col: targetCol}
+        let piece = piecePlacement[selected.row][selected.col]
 
-        setPiecePlacement(newPlacement)
+        let model = new Model();
+        model.board = [...piecePlacement]
+        model.move(piece, selected, destSquare)
+
+        setPiecePlacement(model.board)
         setSelected({row: null, col:null})
         setMoveSet([{row: null, col: null}])    
         setIsWhiteTurn(!isWhiteTurn)    
@@ -97,7 +99,7 @@ const Board = ({squares, onPieceSelect, onPieceMove, selectedSquare, possibleMov
                  }
 
                  if(item){
-                    let moveSet = item.getMoveSet(rowIndex, colIndex, squares)
+                    let moveSet = item.moveSet
                  }
 
                  return (
